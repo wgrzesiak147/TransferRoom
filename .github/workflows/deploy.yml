@@ -19,7 +19,7 @@ jobs:
           dotnet-version: "8.0.x"
 
       - name: Build and Publish Backend
-        working-directory: ./SquadFinder.Api
+        working-directory: ./backend/SquadFinder.Api
         run: |
           dotnet restore
           dotnet publish -c Release -o publish

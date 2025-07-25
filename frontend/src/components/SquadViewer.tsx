@@ -1,13 +1,12 @@
-import React from "react";
 import type { Squad } from "../models/Squad";
 import type { Player } from "../models/Player";
-import "./SquadViewer.css";
+import styles from "./SquadViewer.module.css";
 
 interface SquadViewerProps {
   squad: Squad;
 }
 
-const SquadViewer: React.FC<SquadViewerProps> = ({ squad }) => {
+const SquadViewer = ({ squad }: SquadViewerProps) => {
   return (
     <div className="players-grid">
       {squad.players.map((player: Player) => (
