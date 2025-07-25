@@ -1,0 +1,71 @@
+# =============================
+# Global Git Ignore
+# =============================
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+
+
+# =============================
+# Node / React (frontend)
+# =============================
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.parcel-cache/
+frontend/.next/
+frontend/.vite/
+frontend/.eslintcache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.turbo/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+
+# =============================
+# .NET (backend)
+# =============================
+backend/bin/
+backend/obj/
+backend/.vs/
+backend/*.user
+backend/*.suo
+backend/.vscode/
+backend/appsettings.Local.json
+backend/appsettings.*.local.json
+backend/*.db
+backend/*.log
+
+# For secrets in dev
+backend/Secrets.json
+
+# Rider IDE
+backend/.idea/
+
+
+# =============================
+# Logs and temporary
+# =============================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.pid
+*.seed
+*.pid.lock
+
+# =============================
+# OS-specific
+# =============================
+*.DS_Store
+*.AppleDouble
+.LSOverride
+ehthumbs.db
+Icon?
+Thumbs.db
