@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SquadFinder.Api.Dtos;
@@ -14,40 +15,56 @@ public class FootballApiService : IFootballApiService
     private readonly ILogger<FootballApiService> _logger;
     private readonly string _apiKey;
     private const int FootballApiPremierLeagueId = 39;
+    private readonly IMemoryCache _cache;
 
-    public FootballApiService(
-        HttpClient httpClient,
-        IConfiguration configuration,
-        IFootballApiMapper mapper,
-        ILogger<FootballApiService> logger)
+    public FootballApiService(HttpClient httpClient, IConfiguration configuration, IFootballApiMapper mapper, IMemoryCache cache, ILogger<FootballApiService> logger)
     {
         _httpClient = httpClient;
         _mapper = mapper;
-        _logger = logger;
-
-        _apiKey = configuration["ApiFootball:ApiKey"]
-                  ?? throw new ArgumentNullException("Api key not configured");
-
+        _cache = cache;
+        _apiKey = configuration["ApiFootball:ApiKey"] ?? throw new ArgumentNullException("Api key not configured");
         _httpClient.DefaultRequestHeaders.Add("x-apisports-key", _apiKey);
+        _logger = logger;
     }
 
     public async Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname)
     {
         try
         {
-            _logger.LogInformation("Fetching teams for league {LeagueId} and season 2021", FootballApiPremierLeagueId);
+            var normalizedTeamName = teamNameOrNickname.Trim().ToLowerInvariant();
+            var squadCacheKey = $"squad:{normalizedTeamName}";
+            var teamsCacheKey = $"teams:league:{FootballApiPremierLeagueId}:season:2021";
 
-            var teamsResponse = await _httpClient.GetAsync($"teams?league={FootballApiPremierLeagueId}&season=2021");
-            if (!teamsResponse.IsSuccessStatusCode)
+            // Try to get squad from cache first
+            if (_cache.TryGetValue(squadCacheKey, out SquadDto cachedSquad))
             {
-                _logger.LogError("Failed to fetch teams. Status code: {StatusCode}", teamsResponse.StatusCode);
-                return Result.Fail<SquadDto>($"Failed to fetch teams. Status code: {teamsResponse.StatusCode}");
+                _logger.LogInformation("Squad for team '{TeamName}' retrieved from cache", teamNameOrNickname);
+                return Result.Ok(cachedSquad);
             }
 
-            var teamsData = await JsonSerializer.DeserializeAsync<ApiTeamsResponse>(
-                await teamsResponse.Content.ReadAsStreamAsync());
+            // Try to get teams from cache
+            List<ApiTeamEntry>? teamsList;
+            if (!_cache.TryGetValue(teamsCacheKey, out teamsList))
+            {
+                _logger.LogInformation("Fetching teams from external API for league {LeagueId} and season 2021", FootballApiPremierLeagueId);
 
-            var matchedTeam = teamsData?.Response
+                var teamsResponse = await _httpClient.GetAsync($"teams?league={FootballApiPremierLeagueId}&season=2021");
+                if (!teamsResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Failed to fetch teams. Status code: {StatusCode}", teamsResponse.StatusCode);
+                    return Result.Fail<SquadDto>($"Failed to fetch teams. Status code: {teamsResponse.StatusCode}");
+                }
+
+                var teamsData = await JsonSerializer.DeserializeAsync<ApiTeamsResponse>(
+                    await teamsResponse.Content.ReadAsStreamAsync());
+
+                teamsList = teamsData?.Response ?? new List<ApiTeamEntry>();
+
+                _cache.Set(teamsCacheKey, teamsList, TimeSpan.FromHours(1));
+                _logger.LogInformation("Team list cached for 1 hour.");
+            }
+
+            var matchedTeam = teamsList
                 .Select(t => t.Team)
                 .FirstOrDefault(t =>
                     string.Equals(t.Name, teamNameOrNickname, StringComparison.OrdinalIgnoreCase) ||
@@ -78,7 +95,8 @@ public class FootballApiService : IFootballApiService
 
             var squadDto = _mapper.MapToSquadDto(matchedTeam.Id, matchedTeam.Name, players);
 
-            _logger.LogInformation("Successfully fetched squad for team {TeamId}", matchedTeam.Id);
+            _cache.Set(squadCacheKey, squadDto, TimeSpan.FromHours(1));
+            _logger.LogInformation("Successfully fetched and cached squad for team {TeamId}", matchedTeam.Id);
 
             return Result.Ok(squadDto);
         }

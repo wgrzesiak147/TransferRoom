@@ -6,24 +6,30 @@ This project provides a backend API and a frontend React app to search and displ
 
 ### Backend:
 
-- ASP.NET Core Web API that integrates with the external Football API https://www.api-football.com/ to fetch teams and squad details.
-- Uses HttpClient with dependency injection and FluentResults for robust error handling.
-- Simple logging to console just for testing purposes
+- ASP.NET Core Web API that integrates with the external [API-Football](https://www.api-football.com/) to fetch teams and squad details.
+- Uses `HttpClient` with dependency injection and **FluentResults** for robust error handling.
+- **In-memory caching** has been added to avoid unnecessary calls to the 3rd party API for data that changes infrequently (e.g., team list and squad).
+- Simple logging to console (via `ILogger`) for development and debugging purposes.
 - CORS configured to allow requests from the frontend running on `http://localhost:5173`.
 - Swagger/OpenAPI enabled for easy testing and API exploration during development.
 
 ### Frontend:
 
-- React app created with vite (https://vite.dev/guide/) that allows searching for a team by name or nickname and displays squad members with photos and details.
-- Fetches data from the backend API and handles loading and error states.
+- React app created with [Vite] + Typescript (https://vite.dev/guide/) that allows searching for a team by name or nickname and displays squad members with photos and details.
+- Fetches data from the backend API and handles loading and error states gracefully.
+- Responsive and lightweight UI for fast development and testing.
+
+---
 
 ## How to Run
 
 ### Prerequisites
 
-- .NET 8 SDK installed
-- Node.js (for frontend)
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download) installed
+- [Node.js](https://nodejs.org/en) installed (for frontend)
 - API Key for the Football API (configured in backend `appsettings.json`)
+
+---
 
 ### Backend
 
@@ -45,13 +51,17 @@ Copy
 Edit
 dotnet build
 dotnet run
-The backend will start at http://localhost:5231.
+The backend will start at: http://localhost:5231
 
-Swagger UI is available at http://localhost:5231/swagger for API testing.
+Swagger UI will be available at: http://localhost:5231/swagger
 
 Frontend
-Navigate to the frontend project directory (e.g., frontend).
+Navigate to the frontend project directory (e.g., frontend):
 
+bash
+Copy
+Edit
+cd frontend
 Install dependencies:
 
 bash
@@ -64,16 +74,23 @@ bash
 Copy
 Edit
 npm run dev
-Open your browser at http://localhost:5173.
+Open your browser at: http://localhost:5173
 
 Use the search box to enter a team name or nickname and view the squad details.
 
 Important Notes
-The backend service uses logging to output errors and important info to the console, helping with debugging.
+The backend uses console logging to output errors and HTTP request issues, aiding debugging during development.
 
-CORS is configured to allow the frontend to communicate with the backend during development.
+CORS is configured to allow cross-origin requests from the frontend to the backend (localhost).
 
-The project uses FluentResults in the backend to handle and propagate errors in a clean way.
+The project leverages FluentResults to cleanly handle and propagate error cases in the backend logic.
 
-The solution is designed for ease of maintenance and extensibility.
+In-memory caching has been added for:
+
+The list of Premier League teams (fetched from the teams API).
+
+Each team's squad (fetched from the players/squads API).
+
+This reduces external API usage, improves response time, and provides resiliency if the external service becomes unavailable temporarily. Cache expiration is currently set to 1 hour.
+
 ```
