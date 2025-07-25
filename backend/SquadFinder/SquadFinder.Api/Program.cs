@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var apiFootballConfig = builder.Configuration.GetSection("ApiFootball");
 
+
+builder.Logging.AddConsole(); // Logs to console, usually we could add here some external tool for collecting logs
+
 builder.Services.AddHttpClient<IFootballApiService, FootballApiService>(client =>
 {
     var baseUrl = apiFootballConfig.GetValue<string>("BaseUrl");
