@@ -14,14 +14,14 @@
             _footballApiService = footballApiService;
         }
 
-        [HttpGet("{teamName}")]
-        public async Task<IActionResult> GetSquad(string teamName)
+        [HttpGet]
+        public async Task<IActionResult> GetSquad([FromQuery] string team)
         {
-            var squad = await _footballApiService.GetTeamSquadAsync(teamName);
+            var squad = await _footballApiService.GetTeamSquadAsync(team);
 
             if (squad == null)
             {
-                return NotFound(new { message = $"Team '{teamName}' not found" });
+                return NotFound(new { message = $"Team '{team}' not found" });
             }
 
             return Ok(squad);

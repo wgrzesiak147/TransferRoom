@@ -13,6 +13,19 @@ builder.Services.AddHttpClient<IFootballApiService, FootballApiService>(client =
     client.BaseAddress = new Uri(baseUrl ?? throw new InvalidOperationException("BaseUrl is not configured"));
 });
 
+var frontEndOrigin = "squadFinderFrontEnd";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: frontEndOrigin,
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 builder.Services.AddScoped<IFootballApiMapper, FootballApiMapper>();
 
 builder.Services.AddControllers();
@@ -30,6 +43,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+app.UseCors(frontEndOrigin);
 
 app.MapControllers();
 
