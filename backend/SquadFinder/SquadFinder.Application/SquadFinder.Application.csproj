@@ -6,8 +6,4 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\SquadFinder.Infrastructure\SquadFinder.Infrastructure.csproj" />
-  </ItemGroup>
-
 </Project>
