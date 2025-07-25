@@ -1,14 +1,18 @@
 import { useState } from "react";
-import axios from "axios";
 import "./App.css";
+import SquadViewer from "./components/SquadViewer";
+import { fetchSquad } from "./services/squadService";
 import type { Squad } from "./models/Squad";
-import type { Player } from "./models/Player";
+
+const seasons = [2020, 2021, 2022, 2023, 2024, 2025];
+const paidSeasons = [2024, 2025]; //just workaround
 
 function App() {
   const [teamName, setTeamName] = useState("");
   const [squad, setSquad] = useState<Squad | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [season, setSeason] = useState(2023); //2023 is free in api-football
 
   const handleSearch = async () => {
     if (!teamName.trim()) return;
@@ -18,10 +22,8 @@ function App() {
     setSquad(null);
 
     try {
-      const response = await axios.get<Squad>(
-        `http://localhost:5231/api/squad?team=${encodeURIComponent(teamName)}`
-      );
-      setSquad(response.data);
+      const squadData = await fetchSquad(teamName, season);
+      setSquad(squadData);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch squad. Please check the team name.");
@@ -41,32 +43,25 @@ function App() {
           value={teamName}
           onChange={(e) => setTeamName(e.target.value)}
         />
+        <select
+          value={season}
+          onChange={(e) => setSeason(parseInt(e.target.value))}
+        >
+          {seasons.map((s) => (
+            <option key={s} value={s}>
+              {s}/{(s + 1).toString().slice(-2)}
+              {paidSeasons.includes(s) ? " (Paid)" : ""}
+            </option>
+          ))}
+        </select>
+
         <button onClick={handleSearch}>Search</button>
       </div>
 
       {loading && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}
 
-      <div className="players-grid">
-        {squad?.players.map((player: Player) => (
-          <div className="player-card" key={player.playerId}>
-            <img
-              src={player.photo}
-              alt={`${player.firstName} ${player.lastName}`}
-            />
-            <h3>
-              {player.firstName} {player.lastName}
-            </h3>
-            <p>{player.position}</p>
-            <p>
-              DOB:{" "}
-              {player.dateOfBirth
-                ? new Date(player.dateOfBirth).toLocaleDateString()
-                : "N/A"}
-            </p>
-          </div>
-        ))}
-      </div>
+      {!loading && squad && <SquadViewer squad={squad} />}
     </div>
   );
 }

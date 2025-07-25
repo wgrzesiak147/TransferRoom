@@ -15,7 +15,7 @@ public class SquadController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetSquad([FromQuery] string team)
+    public async Task<IActionResult> GetSquad([FromQuery] string team, [FromQuery] int season)
     {
         if (string.IsNullOrWhiteSpace(team))
         {
@@ -23,7 +23,7 @@ public class SquadController : ControllerBase
             return BadRequest(new { message = "Team query parameter is required." });
         }
 
-        var result = await _footballApiService.GetTeamSquadAsync(team);
+        var result = await _footballApiService.GetTeamSquadAsync(team, season);
 
         if (result.IsFailed)
         {

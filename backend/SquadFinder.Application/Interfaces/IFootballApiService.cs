@@ -5,6 +5,6 @@ namespace SquadFinder.Application.Interfaces
 {
     public interface IFootballApiService
     {
-        Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname);
+        public Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname, int season);
     }
 }

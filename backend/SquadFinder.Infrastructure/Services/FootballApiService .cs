@@ -27,13 +27,18 @@ public class FootballApiService : IFootballApiService
         _logger = logger;
     }
 
-    public async Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname)
+    /// <summary>
+    /// Getting team squad async by team name and season. Caching responses for 1 hour
+    /// </summary>
+    /// <param name="teamNameOrNickname"></param>
+    /// <returns></returns>
+    public async Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname, int season)
     {
         try
         {
             var normalizedTeamName = teamNameOrNickname.Trim().ToLowerInvariant();
             var squadCacheKey = $"squad:{normalizedTeamName}";
-            var teamsCacheKey = $"teams:league:{FootballApiPremierLeagueId}:season:2021";
+            var teamsCacheKey = $"teams:league:{FootballApiPremierLeagueId}:season:{season}";
 
             // Try to get squad from cache first
             if (_cache.TryGetValue(squadCacheKey, out SquadDto cachedSquad))
@@ -46,9 +51,9 @@ public class FootballApiService : IFootballApiService
             List<ApiTeamEntry>? teamsList;
             if (!_cache.TryGetValue(teamsCacheKey, out teamsList))
             {
-                _logger.LogInformation("Fetching teams from external API for league {LeagueId} and season 2021", FootballApiPremierLeagueId);
+                _logger.LogInformation("Fetching teams from external API for league {LeagueId} and season {Season}", FootballApiPremierLeagueId, season);
 
-                var teamsResponse = await _httpClient.GetAsync($"teams?league={FootballApiPremierLeagueId}&season=2021");
+                var teamsResponse = await _httpClient.GetAsync($"teams?league={FootballApiPremierLeagueId}&season={season}");
                 if (!teamsResponse.IsSuccessStatusCode)
                 {
                     _logger.LogError("Failed to fetch teams. Status code: {StatusCode}", teamsResponse.StatusCode);
