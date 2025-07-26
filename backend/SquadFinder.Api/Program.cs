@@ -1,20 +1,9 @@
-using SquadFinder.Application.Interfaces;
+using SquadFinder.Infrastructure;
 using SquadFinder.Infrastructure.Mappers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-var apiFootballConfig = builder.Configuration.GetSection("ApiFootball");
-
-
 builder.Logging.AddConsole(); // Logs to console, usually we could add here some external tool for collecting logs
-
-builder.Services.AddHttpClient<IFootballApiService, FootballApiService>(client =>
-{
-    var baseUrl = apiFootballConfig.GetValue<string>("BaseUrl");
-    client.BaseAddress = new Uri(baseUrl ?? throw new InvalidOperationException("BaseUrl is not configured"));
-});
 
 var frontEndOrigin = "squadFinderFrontEnd";
 
@@ -30,6 +19,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IFootballApiMapper, FootballApiMapper>();
+
+builder.Services.AddFootballApiClient(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

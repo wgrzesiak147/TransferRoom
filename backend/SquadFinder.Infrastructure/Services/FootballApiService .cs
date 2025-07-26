@@ -1,6 +1,5 @@
 ﻿using FluentResults;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SquadFinder.Api.Dtos;
 using SquadFinder.Application.Interfaces;
@@ -13,18 +12,31 @@ public class FootballApiService : IFootballApiService
     private readonly HttpClient _httpClient;
     private readonly IFootballApiMapper _mapper;
     private readonly ILogger<FootballApiService> _logger;
-    private readonly string _apiKey;
     private const int FootballApiPremierLeagueId = 39;
     private readonly IMemoryCache _cache;
 
-    public FootballApiService(HttpClient httpClient, IConfiguration configuration, IFootballApiMapper mapper, IMemoryCache cache, ILogger<FootballApiService> logger)
+    public FootballApiService(HttpClient httpClient, IFootballApiMapper mapper, IMemoryCache cache, ILogger<FootballApiService> logger)
     {
         _httpClient = httpClient;
         _mapper = mapper;
         _cache = cache;
-        _apiKey = configuration["ApiFootball:ApiKey"] ?? throw new ArgumentNullException("Api key not configured");
-        _httpClient.DefaultRequestHeaders.Add("x-apisports-key", _apiKey);
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Enriching squad player with birth data as its not included by default
+    /// </summary>
+    /// <param name="basePlayer"></param>
+    /// <param name="detail"></param>
+    /// <returns></returns>
+    private ApiSquadPlayer EnrichSquadPlayer(ApiSquadPlayer basePlayer, ApiPlayerProfile detail)
+    {
+        if (detail != null)
+        {
+            basePlayer.Birth = detail.Birth;
+        }
+
+        return basePlayer;
     }
 
     /// <summary>
@@ -73,8 +85,7 @@ public class FootballApiService : IFootballApiService
                 .Select(t => t.Team)
                 .FirstOrDefault(t =>
                     string.Equals(t.Name, teamNameOrNickname, StringComparison.OrdinalIgnoreCase) ||
-                    (t.Nickname != null && t.Nickname.Contains(teamNameOrNickname, StringComparison.OrdinalIgnoreCase))
-                );
+                    t.Name.Contains(teamNameOrNickname, StringComparison.OrdinalIgnoreCase));
 
             if (matchedTeam == null)
             {
@@ -98,6 +109,10 @@ public class FootballApiService : IFootballApiService
                 .SelectMany(r => r.Players)
                 .ToList() ?? new List<ApiSquadPlayer>();
 
+
+            // Fetch full player details in parallel
+            await EnrichPlayersWithExtraData(season, players);
+
             var squadDto = _mapper.MapToSquadDto(matchedTeam.Id, matchedTeam.Name, players);
 
             _cache.Set(squadCacheKey, squadDto, TimeSpan.FromHours(1));
@@ -110,5 +125,39 @@ public class FootballApiService : IFootballApiService
             _logger.LogError(ex, "Unexpected error occurred while fetching squad for team '{TeamName}'", teamNameOrNickname);
             return Result.Fail<SquadDto>($"Unexpected error occurred: {ex.Message}");
         }
+
+    }
+
+    private async Task EnrichPlayersWithExtraData(int season, List<ApiSquadPlayer> players)
+    {
+        var enrichedPlayers = await Task.WhenAll(players.Select(async player =>
+        {
+            var playerCacheKey = $"player:{player.Id}";
+
+            if (_cache.TryGetValue(playerCacheKey, out ApiPlayerProfile cachedPlayerProfile))
+            {
+                return EnrichSquadPlayer(player, cachedPlayerProfile);
+            }
+
+            var playerResponse = await _httpClient.GetAsync($"players?id={player.Id}&season={season}");
+            if (!playerResponse.IsSuccessStatusCode)
+            {
+                _logger.LogWarning("Failed to fetch details for player {PlayerId}. Status code: {StatusCode}", player.Id, playerResponse.StatusCode);
+                return player; // fallback to original player data
+            }
+
+            var playerDetailWrapper = await JsonSerializer.DeserializeAsync<ApiPlayerProfileResponse>(
+                await playerResponse.Content.ReadAsStreamAsync());
+
+            var playerProfileResponse = playerDetailWrapper?.Response?.FirstOrDefault();
+
+            if (playerProfileResponse != null)
+            {
+                _cache.Set(playerCacheKey, playerProfileResponse, TimeSpan.FromHours(6));
+                return EnrichSquadPlayer(player, playerProfileResponse.Player);
+            }
+
+            return player;
+        }));
     }
 }

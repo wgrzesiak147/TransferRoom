@@ -8,9 +8,9 @@ interface SquadViewerProps {
 
 const SquadViewer = ({ squad }: SquadViewerProps) => {
   return (
-    <div className="players-grid">
+    <div className={styles.playersGrid}>
       {squad.players.map((player: Player) => (
-        <div className="player-card" key={player.playerId}>
+        <div className={styles.playerCard} key={player.playerId}>
           <img
             src={player.photo}
             alt={`${player.firstName} ${player.lastName}`}
