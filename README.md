@@ -46,9 +46,6 @@ This project provides a backend API and a frontend React app to search and displ
 }
 Build and run the backend API:
 
-bash
-Copy
-Edit
 dotnet build
 dotnet run
 The backend will start at: http://localhost:5231
@@ -58,25 +55,16 @@ Swagger UI will be available at: http://localhost:5231/swagger
 Frontend
 Navigate to the frontend project directory (e.g., frontend):
 
-bash
-Copy
-Edit
 cd frontend
 Install dependencies:
 
-bash
-Copy
-Edit
 npm install
 Run the development server:
 
-bash
-Copy
-Edit
 npm run dev
 Open your browser at: http://localhost:5173
 
-Use the search box to enter a team name or nickname and view the squad details.
+Use the search box to enter a team name or nickname and view the squad details. There is also dropdown to select season
 
 Important Notes
 The backend uses console logging to output errors and HTTP request issues, aiding debugging during development.
