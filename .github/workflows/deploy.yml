@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+  env:
+    ApiFootball__ApiKey: ${{ secrets.FOOTBALLAPIKEY }}
+    ApiFootball__BaseUrl: ${{ vars.FOOTBALLAPIBASEURL }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

@@ -29,8 +29,6 @@ This project provides a backend API and a frontend React app to search and displ
 - [Node.js](https://nodejs.org/en) installed (for frontend)
 - API Key for the Football API (configured in backend `appsettings.json`)
 
----
-
 ### Backend
 
 1. Clone the repository and open the backend project directory.

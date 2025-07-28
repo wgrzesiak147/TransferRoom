@@ -14,6 +14,7 @@ const SquadSearcher = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [season, setSeason] = useState(2023);
+
   const handleSearch = async () => {
     if (!teamName.trim()) return;
 
@@ -67,7 +68,9 @@ const SquadSearcher = () => {
           ))}
         </select>
 
-        <button onClick={handleSearch}>Search</button>
+        <button onClick={handleSearch} disabled={loading || !teamName.trim()}>
+          Search
+        </button>
       </div>
 
       {loading && <p>Loading...</p>}

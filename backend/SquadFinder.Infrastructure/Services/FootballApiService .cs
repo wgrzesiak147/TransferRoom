@@ -42,20 +42,20 @@ public class FootballApiService : IFootballApiService
     /// <summary>
     /// Getting team squad async by team name and season. Caching responses for 1 hour
     /// </summary>
-    /// <param name="teamNameOrNickname"></param>
+    /// <param name="teamName"></param>
     /// <returns></returns>
-    public async Task<Result<SquadDto>> GetTeamSquadAsync(string teamNameOrNickname, int season)
+    public async Task<Result<SquadDto>> GetTeamSquadAsync(string teamName, int season)
     {
         try
         {
-            var normalizedTeamName = teamNameOrNickname.Trim().ToLowerInvariant();
+            var normalizedTeamName = teamName.Trim().ToLowerInvariant();
             var squadCacheKey = $"squad:{normalizedTeamName}";
             var teamsCacheKey = $"teams:league:{FootballApiPremierLeagueId}:season:{season}";
 
             // Try to get squad from cache first
             if (_cache.TryGetValue(squadCacheKey, out SquadDto cachedSquad))
             {
-                _logger.LogInformation("Squad for team '{TeamName}' retrieved from cache", teamNameOrNickname);
+                _logger.LogInformation("Squad for team '{TeamName}' retrieved from cache", teamName);
                 return Result.Ok(cachedSquad);
             }
 
@@ -84,13 +84,13 @@ public class FootballApiService : IFootballApiService
             var matchedTeam = teamsList
                 .Select(t => t.Team)
                 .FirstOrDefault(t =>
-                    string.Equals(t.Name, teamNameOrNickname, StringComparison.OrdinalIgnoreCase) ||
-                    t.Name.Contains(teamNameOrNickname, StringComparison.OrdinalIgnoreCase));
+                    string.Equals(t.Name, teamName, StringComparison.OrdinalIgnoreCase) ||
+                    t.Name.Contains(teamName, StringComparison.OrdinalIgnoreCase));
 
             if (matchedTeam == null)
             {
-                _logger.LogWarning("Team '{TeamName}' not found in league {LeagueId}", teamNameOrNickname, FootballApiPremierLeagueId);
-                return Result.Fail<SquadDto>($"Team '{teamNameOrNickname}' not found.");
+                _logger.LogWarning("Team '{TeamName}' not found in league {LeagueId}", teamName, FootballApiPremierLeagueId);
+                return Result.Fail<SquadDto>($"Team '{teamName}' not found.");
             }
 
             _logger.LogInformation("Fetching squad for team {TeamId} - {TeamName}", matchedTeam.Id, matchedTeam.Name);
@@ -122,12 +122,18 @@ public class FootballApiService : IFootballApiService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error occurred while fetching squad for team '{TeamName}'", teamNameOrNickname);
+            _logger.LogError(ex, "Unexpected error occurred while fetching squad for team '{TeamName}'", teamName);
             return Result.Fail<SquadDto>($"Unexpected error occurred: {ex.Message}");
         }
 
     }
 
+    /// <summary>
+    /// Needed to extend players with Birthdate
+    /// </summary>
+    /// <param name="season"></param>
+    /// <param name="players"></param>
+    /// <returns></returns>
     private async Task EnrichPlayersWithExtraData(int season, List<ApiSquadPlayer> players)
     {
         var enrichedPlayers = await Task.WhenAll(players.Select(async player =>
