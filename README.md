@@ -43,6 +43,7 @@ This project provides a backend API and a frontend React app to search and displ
   }
 }
 ```
+ApiKey can be found in GitHub Actions secret
 
 ### Build and run the backend API:
 
