@@ -46,7 +46,7 @@ This project provides a backend API and a frontend React app to search and displ
 
 ### Build and run the backend API:
 
-bash
+```bash
 Copy
 Edit
 dotnet build
@@ -55,6 +55,7 @@ The backend will start at:
 👉 http://localhost:5231
 Swagger UI available at:
 👉 http://localhost:5231/swagger
+```
 
 ### 🌐 Frontend Setup
 
