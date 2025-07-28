@@ -44,7 +44,7 @@ This project provides a backend API and a frontend React app to search and displ
 }
 ```
 
-Build and run the backend API:
+### Build and run the backend API:
 
 bash
 Copy
@@ -56,7 +56,8 @@ The backend will start at:
 Swagger UI available at:
 👉 http://localhost:5231/swagger
 
-🌐 Frontend Setup
+### 🌐 Frontend Setup
+
 Navigate to the frontend project directory:
 
 bash
@@ -81,14 +82,15 @@ Open your browser at:
 Use the search box to enter a team name or nickname and view the squad details.
 A season dropdown is also available.
 
-🧠 Important Notes
+### 🧠 Important Notes
+
 The backend uses console logging via ILogger to help debug API calls and errors.
 
 CORS is configured to allow cross-origin requests from the frontend (localhost:5173).
 
 The project uses FluentResults for clean and consistent error handling.
 
-In-memory caching is used to:
+### In-memory caching is used to:
 
 Store the list of Premier League teams (from the /teams API).
 
