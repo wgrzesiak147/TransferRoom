@@ -42,6 +42,8 @@ This project provides a backend API and a frontend React app to search and displ
     "ApiKey": "YOUR_API_KEY_HERE"
   }
 }
+```
+
 Build and run the backend API:
 
 dotnet build
@@ -78,5 +80,7 @@ The list of Premier League teams (fetched from the teams API).
 Each team's squad (fetched from the players/squads API).
 
 This reduces external API usage, improves response time, and provides resiliency if the external service becomes unavailable temporarily. Cache expiration is currently set to 1 hour.
+
+```
 
 ```
