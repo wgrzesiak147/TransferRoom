@@ -46,41 +46,54 @@ This project provides a backend API and a frontend React app to search and displ
 
 Build and run the backend API:
 
+bash
+Copy
+Edit
 dotnet build
 dotnet run
-The backend will start at: http://localhost:5231
+The backend will start at:
+👉 http://localhost:5231
+Swagger UI available at:
+👉 http://localhost:5231/swagger
 
-Swagger UI will be available at: http://localhost:5231/swagger
+🌐 Frontend Setup
+Navigate to the frontend project directory:
 
-Frontend
-Navigate to the frontend project directory (e.g., frontend):
-
+bash
+Copy
+Edit
 cd frontend
 Install dependencies:
 
+bash
+Copy
+Edit
 npm install
-Run the development server:
+Start the development server:
 
+bash
+Copy
+Edit
 npm run dev
-Open your browser at: http://localhost:5173
+Open your browser at:
+👉 http://localhost:5173
 
-Use the search box to enter a team name or nickname and view the squad details. There is also dropdown to select season
+Use the search box to enter a team name or nickname and view the squad details.
+A season dropdown is also available.
 
-Important Notes
-The backend uses console logging to output errors and HTTP request issues, aiding debugging during development.
+🧠 Important Notes
+The backend uses console logging via ILogger to help debug API calls and errors.
 
-CORS is configured to allow cross-origin requests from the frontend to the backend (localhost).
+CORS is configured to allow cross-origin requests from the frontend (localhost:5173).
 
-The project leverages FluentResults to cleanly handle and propagate error cases in the backend logic.
+The project uses FluentResults for clean and consistent error handling.
 
-In-memory caching has been added for:
+In-memory caching is used to:
 
-The list of Premier League teams (fetched from the teams API).
+Store the list of Premier League teams (from the /teams API).
 
-Each team's squad (fetched from the players/squads API).
+Store each team's squad (from the /players or /squads API).
 
-This reduces external API usage, improves response time, and provides resiliency if the external service becomes unavailable temporarily. Cache expiration is currently set to 1 hour.
+Caching reduces external API usage, improves performance, and adds resiliency.
 
-```
-
-```
+⏱ Cache expiration is currently set to 1 hour.
