@@ -3,6 +3,6 @@ export interface Player {
   firstName: string;
   lastName: string;
   position: string;
-  dateOfBirth: string | null; // ISO date string or null
+  dateOfBirth: string | null;
   photo: string;
 }
